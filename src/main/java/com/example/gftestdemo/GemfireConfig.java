@@ -2,6 +2,7 @@ package com.example.gftestdemo;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -15,7 +16,8 @@ public class GemfireConfig {
         ClientRegionFactoryBean<String, Boolean> region = new ClientRegionFactoryBean<>();
 
         region.setCache(cache);
-        region.setLookupEnabled(true);
+        region.setClose(false);
+        region.setShortcut(ClientRegionShortcut.PROXY);
 
         return region;
     }
