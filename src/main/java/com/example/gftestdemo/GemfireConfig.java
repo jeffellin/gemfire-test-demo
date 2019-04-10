@@ -1,8 +1,7 @@
 package com.example.gftestdemo;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.Region;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +20,13 @@ public class GemfireConfig {
         ClientRegionFactoryBean<String, Boolean> region = new ClientRegionFactoryBean<>();
 
         Interest interest = new RegexInterest(".*", InterestResultPolicy.KEYS);
+
+        CacheListener[] listeners = {new RestrictionsCacheListener()};
+
         region.setCache(cache);
-        //Interest interests[] = {interest};
-        //region.setInterests(interests);
+        Interest interests[] = {interest};
+        region.setInterests(interests);
+        region.setCacheListeners(listeners);
 
         region.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
@@ -46,4 +49,8 @@ public class GemfireConfig {
         };
     }
 
+
+
 }
+
+

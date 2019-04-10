@@ -1,28 +1,42 @@
 package com.example.gftestdemo;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.ServerLauncher;
-import org.junit.AfterClass;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.RegionEvent;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.GemfireTemplate;
-import org.springframework.data.gemfire.tests.integration.ClientServerIntegrationTestsSupport;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
+import org.springframework.data.gemfire.config.annotation.EnableLocator;
+import org.springframework.data.gemfire.config.annotation.EnableLogging;
+import org.springframework.data.gemfire.config.annotation.EnablePdx;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
+import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = "spring.data.gemfire.cache.log-level=warn")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = "spring.data.gemfire.cache.log-level=warn",
+        classes = GemFireTests.GemFireClientConfiguration.class)
 public class GemFireTests extends ForkingClientServerIntegrationTestsSupport {
+
+
+    private static final String GEMFIRE_LOG_LEVEL = "error";
 
     @Autowired
     private GemfireTemplate template;
@@ -32,43 +46,61 @@ public class GemFireTests extends ForkingClientServerIntegrationTestsSupport {
         startGemFireServer(GemFireServerConfiguration.class);
     }
 
-    @AfterClass
-    public static void shutdown() throws IOException {
-        closeGemFireCacheWaitOnCloseEvent();
-        stopGemFireServer();
+    @Before()
+    public void before() {
+
+        template.put("key", true);
+
     }
 
+
+    @SpringBootApplication
+    @EnableLogging(logLevel = GEMFIRE_LOG_LEVEL)
+    @Import({ClientServerIntegrationTestsConfiguration.class, GemfireConfig.class})
+    public static class GemFireClientConfiguration {
+
+
+    }
+
+
+    @CacheServerApplication(name = "AutoConfiguredContinuousQueryIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
+    @EnablePdx
+    @EnableLocator
     public static class GemFireServerConfiguration {
-        public static void main(String[] args) throws InterruptedException {
-            int port = Integer.parseInt(System.getProperty(ClientServerIntegrationTestsSupport.GEMFIRE_CACHE_SERVER_PORT_PROPERTY, "40404"));
+        public static void main(String[] args) {
+            AnnotationConfigApplicationContext applicationContext =
+                    new AnnotationConfigApplicationContext(GemFireServerConfiguration.class);
 
-            ServerLauncher serverLauncher = new ServerLauncher.Builder()
-                    .setServerPort(port)
-                    .setMemberName("testServer")
-                    .set("log-level", "info")
-                    .build();
+            applicationContext.registerShutdownHook();
 
-            serverLauncher.start();
 
-            serverLauncher.waitOnServer();
+        }
 
-            Cache cache = CacheFactory.getAnyInstance();
-            cache.createRegionFactory(RegionShortcut.REPLICATE).create("restrictionsRegion").put("key", Boolean.TRUE);
+        @Bean("restrictionsRegion")
+        public PartitionedRegionFactoryBean<String, Boolean> restrictionsRegion(GemFireCache gemfireCache) {
 
-            // Wait forever until the process is killed
-            CountDownLatch infiniteLatch = new CountDownLatch(1);
-            infiniteLatch.await();
+
+            PartitionedRegionFactoryBean<String, Boolean> restrictionsRegion =
+                    new PartitionedRegionFactoryBean<>();
+
+            restrictionsRegion.setCache(gemfireCache);
+            restrictionsRegion.setClose(false);
+            restrictionsRegion.setPersistent(false);
+            return restrictionsRegion;
         }
 
     }
-
     @Test
     public void shouldGetValue() throws InterruptedException {
+
+
         assertThat((Boolean) template.get("key")).isTrue();
+
     }
 
     @Test
     public void shouldNotGetValue() throws InterruptedException {
         assertThat((Boolean) template.get("notKey")).isNull();
     }
+
 }
