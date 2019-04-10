@@ -15,21 +15,21 @@ import static org.mockito.Mockito.when;
 public class GemfireMockTests {
 
     @Mock
-    private Region restrictionsRegion;
+    private Region restrictionRegion;
 
     @InjectMocks
     private RestrictionService restrictionService;
 
     @Test
     public void checkRestricted(){
-        when(restrictionsRegion.get("restricted")).thenReturn(true);
+        when(restrictionRegion.get("restricted")).thenReturn(true);
 
         assertTrue((restrictionService.checkRestriction("restricted")));
     }
 
     @Test
     public void checkNotRestricted(){
-        when(restrictionsRegion.get("notrestricted")).thenReturn(false);
+        when(restrictionRegion.get("notrestricted")).thenReturn(false);
 
         assertFalse((restrictionService.checkRestriction("notrestricted")));
     }

@@ -6,7 +6,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.RegionEvent;
 
 @Slf4j
-public class RestrictionsCacheListener<String, Boolean> implements CacheListener<String, Boolean> {
+public class RestrictionCacheListener<String, Boolean> implements CacheListener<String, Boolean> {
 
     @Override
     public void afterCreate(EntryEvent<String, Boolean> entryEvent) {

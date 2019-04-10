@@ -97,8 +97,8 @@ public class GemFireTests extends ForkingClientServerIntegrationTestsSupport {
 
         }
 
-        @Bean("restrictionsRegion")
-        public PartitionedRegionFactoryBean<String, Boolean> restrictionsRegion(GemFireCache gemfireCache) {
+        @Bean("restrictionRegion")
+        public PartitionedRegionFactoryBean<String, Boolean> restrictionRegion(GemFireCache gemfireCache) {
 
 
             PartitionedRegionFactoryBean<String, Boolean> restrictionsRegion =

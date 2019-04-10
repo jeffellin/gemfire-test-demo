@@ -1,6 +1,5 @@
 package com.example.gftestdemo;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.context.annotation.Bean;
@@ -15,13 +14,13 @@ import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 @Configuration
 public class GemfireConfig {
 
-    @Bean("restrictionsRegion")
-    public ClientRegionFactoryBean<String, Boolean> restrictionsRegion(GemFireCache cache) {
+    @Bean("restrictionRegion")
+    public ClientRegionFactoryBean<String, Boolean> restrictionRegion(GemFireCache cache) {
         ClientRegionFactoryBean<String, Boolean> region = new ClientRegionFactoryBean<>();
 
         Interest interest = new RegexInterest(".*", InterestResultPolicy.KEYS);
 
-        CacheListener[] listeners = {new RestrictionsCacheListener()};
+        CacheListener[] listeners = {new RestrictionCacheListener()};
 
         region.setCache(cache);
         Interest interests[] = {interest};

@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 public class RestrictionService {
 
     @Autowired
-    @Qualifier("restrictionsRegion")
-    Region restrictionsRegion;
+    @Qualifier("restrictionRegion")
+    Region restrictionRegion;
 
     public  boolean checkRestriction(String key){
-       return (boolean) restrictionsRegion.get(key);
+       return (boolean) restrictionRegion.get(key);
     }
 
 
