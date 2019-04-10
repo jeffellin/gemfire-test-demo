@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
@@ -41,6 +44,10 @@ public class GemFireTests extends ForkingClientServerIntegrationTestsSupport {
     @Autowired
     private GemfireTemplate template;
 
+
+    @Autowired
+    private RestrictionService restrictionService;
+
     @BeforeClass
     public static void startGemFireServer() throws IOException {
         startGemFireServer(GemFireServerConfiguration.class);
@@ -48,9 +55,23 @@ public class GemFireTests extends ForkingClientServerIntegrationTestsSupport {
 
     @Before()
     public void before() {
-
         template.put("key", true);
+        template.put("restricted", true);
+        template.put("notrestricted", false);
 
+
+    }
+
+    @Test
+    public void checkRestricted(){
+
+        assertTrue((restrictionService.checkRestriction("restricted")));
+    }
+
+    @Test
+    public void checkNotRestricted(){
+
+        assertFalse((restrictionService.checkRestriction("notrestricted")));
     }
 
 

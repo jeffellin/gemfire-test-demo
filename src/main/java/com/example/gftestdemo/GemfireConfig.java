@@ -15,7 +15,7 @@ import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 @Configuration
 public class GemfireConfig {
 
-    @Bean
+    @Bean("restrictionsRegion")
     public ClientRegionFactoryBean<String, Boolean> restrictionsRegion(GemFireCache cache) {
         ClientRegionFactoryBean<String, Boolean> region = new ClientRegionFactoryBean<>();
 
