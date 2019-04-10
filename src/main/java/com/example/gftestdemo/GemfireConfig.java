@@ -1,12 +1,17 @@
 package com.example.gftestdemo;
 
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.client.Interest;
+import org.springframework.data.gemfire.client.RegexInterest;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 
 @Configuration
 public class GemfireConfig {
@@ -15,9 +20,12 @@ public class GemfireConfig {
     public ClientRegionFactoryBean<String, Boolean> restrictionsRegion(GemFireCache cache) {
         ClientRegionFactoryBean<String, Boolean> region = new ClientRegionFactoryBean<>();
 
+        Interest interest = new RegexInterest(".*", InterestResultPolicy.KEYS);
         region.setCache(cache);
-        region.setClose(false);
-        region.setShortcut(ClientRegionShortcut.PROXY);
+        //Interest interests[] = {interest};
+        //region.setInterests(interests);
+
+        region.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
         return region;
     }
@@ -25,6 +33,17 @@ public class GemfireConfig {
     @Bean
     public GemfireTemplate template(Region restrictionsRegion) {
         return new GemfireTemplate(restrictionsRegion);
+    }
+
+    @Bean
+    public ClientCacheConfigurer clientCacheConfigurer(){
+        return  new ClientCacheConfigurer() {
+            @Override
+            public void configure(String s, ClientCacheFactoryBean clientCacheFactoryBean) {
+
+                clientCacheFactoryBean.setSubscriptionEnabled(true);
+            }
+        };
     }
 
 }
